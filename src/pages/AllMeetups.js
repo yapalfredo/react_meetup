@@ -1,33 +1,47 @@
 import MeetupList from "../components/meetups/MeetupList";
-
-const DUMMY_DATA = [
-  {
-    id: "nm1",
-    title: "This is a first meetup",
-    image:
-      "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d3/Stadtbild_M%C3%BCnchen.jpg/2560px-Stadtbild_M%C3%BCnchen.jpg",
-    address: "Meetupstreet 5, 12345 Meetup City",
-    description:
-      "This is a first, amazing meetup which you definitely should not miss. It will be a lot of fun!",
-  },
-  {
-    id: "nm2",
-    title: "This is a second meetup",
-    image:
-      "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d3/Stadtbild_M%C3%BCnchen.jpg/2560px-Stadtbild_M%C3%BCnchen.jpg",
-    address: "Meetupstreet 5, 12345 Meetup City",
-    description:
-      "This is a first, amazing meetup which you definitely should not miss. It will be a lot of fun!",
-  },
-];
+import { useEffect, useState } from "react";
 
 function AllMeetupsPage() {
-  return (
-    <section>
-      <h1>ALL MEETUPS PAGE</h1>
-      <MeetupList meetups={DUMMY_DATA}/>
-    </section>
-  )
+  const [hasBeenLoaded, setHasBeenLoaded] = useState(false);
+  const [loadedMeetups, setLoadedMeetups] = useState([]);
+
+  useEffect(() => {
+    setHasBeenLoaded(false);
+    fetch(process.env.REACT_APP_DATABASE_ENDPOINT)
+      .then((res) => {
+        return res.json();
+      })
+      .then((data) => {
+        //Transform data
+        const meetups = [];
+        for (const key in data) {
+          const meetup = {
+            id: key,
+            ...data[key]
+          };
+          meetups.push(meetup);
+        }
+
+        setHasBeenLoaded(true);
+        setLoadedMeetups(meetups);
+      });
+  }, []);
+
+  //if not yet done loading
+  if (!hasBeenLoaded) {
+    return (
+      <section>
+        <p>Loading....</p>
+      </section>
+    );
+  } else {
+    return (
+      <section>
+        <h1>ALL MEETUPS PAGE</h1>
+        <MeetupList meetups={loadedMeetups} />
+      </section>
+    );
+  }
 }
 
 export default AllMeetupsPage;
